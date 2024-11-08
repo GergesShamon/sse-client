@@ -55,14 +55,16 @@ class Client
      * Initializes the SSE client and opens a connection to the specified URL.
      *
      * @param string $url URL for the SSE server.
+     * @param string|null $userAgent Optional custom User-Agent for the SSE client.
      */
-    public function __construct(string $url)
+    public function __construct(string $url, string $userAgent = null)
     {
         $this->url = $url;
         $this->client = new GuzzleHttp\Client([
             'headers' => [
                 'Accept' => 'text/event-stream',
                 'Cache-Control' => 'no-cache',
+                'User-Agent' => $userAgent ?? 'SSE-Client/1.0 (https://github.com/GergesShamon/sse-client)', // Default User-Agent with library link
             ],
         ]);
         $this->connect();
