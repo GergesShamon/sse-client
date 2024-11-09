@@ -48,25 +48,24 @@ class Client
      * @var int Reconnection time in milliseconds.
      */
     private $retry = self::RETRY_DEFAULT_MS;
-
+    
     /**
      * Constructor.
      *
      * Initializes the SSE client and opens a connection to the specified URL.
      *
      * @param string $url URL for the SSE server.
-     * @param string|null $userAgent Optional custom User-Agent for the SSE client.
+     * @param array<string, mixed> $config for GuzzleHttp Client.
      */
-    public function __construct(string $url, string $userAgent = null)
+    public function __construct(string $url, array $config = [])
     {
+        if (!isset($config['headers'])) {
+            $config['headers'] = [];
+        }
+        $config['headers']['Accept'] = 'text/event-stream';
+        $config['headers']['Cache-Control'] = 'no-cache';
         $this->url = $url;
-        $this->client = new GuzzleHttp\Client([
-            'headers' => [
-                'Accept' => 'text/event-stream',
-                'Cache-Control' => 'no-cache',
-                'User-Agent' => $userAgent ?? 'SSE-Client/1.0 (https://github.com/GergesShamon/sse-client)', // Default User-Agent with library link
-            ],
-        ]);
+        $this->client = new GuzzleHttp\Client($config);
         $this->connect();
     }
 
