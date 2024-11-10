@@ -180,10 +180,8 @@ class Client
      * This method is called automatically when the object is destroyed.
      * If a file path was set with `saveLastIdToFile()`, it saves the value
      * of `$this->lastId` to that file.
-     *
-     * @return void
      */
-    public function __destruct(): void
+    public function __destruct()
     {
         if ($this->lastIdFile) {
             file_put_contents($this->lastIdFile, $this->lastId);
