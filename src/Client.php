@@ -40,7 +40,7 @@ class Client
     private $url;
 
     /**
-     * @var string ID of the last received message.
+     * @var string|false ID of the last received message.
      */
     private $lastId;
 
@@ -48,6 +48,11 @@ class Client
      * @var int Reconnection time in milliseconds.
      */
     private $retry = self::RETRY_DEFAULT_MS;
+    
+    /**
+     * @var string Path to the file where the lastId will be stored.
+     */
+    private $lastIdFile;
     
     /**
      * Constructor.
@@ -66,6 +71,8 @@ class Client
         $config['headers']['Cache-Control'] = 'no-cache';
         $this->url = $url;
         $this->client = new GuzzleHttp\Client($config);
+        
+        $this->lastId = $this->loadLastIdFromFile();
         $this->connect();
     }
 
@@ -141,6 +148,45 @@ class Client
                     yield $event;
                 }
             }
+        }
+    }
+    /**
+     * Load the last received event ID from a file.
+     *
+     * @return false|string The last event ID or false if the file doesn't exist or is empty.
+     */
+    private function loadLastIdFromFile(): false|string 
+    {
+        if (file_exists($this->lastIdFile)) {
+            $lastId = file_get_contents($this->lastIdFile);
+            return $lastId ?: false;
+        }
+        return false;
+    }
+    /**
+     * Sets the file path where the last processed ID will be saved.
+     *
+     * @param string $lastIdFile The path to the file where the last ID will be stored.
+     * @return void
+     */
+    public function saveLastIdToFile(string $lastIdFile): void 
+    {
+        $this->lastIdFile = $lastIdFile;
+    }
+    
+    /**
+     * Destructor that writes the last processed ID to the specified file.
+     *
+     * This method is called automatically when the object is destroyed.
+     * If a file path was set with `saveLastIdToFile()`, it saves the value
+     * of `$this->lastId` to that file.
+     *
+     * @return void
+     */
+    public function __destruct(): void
+    {
+        if ($this->lastIdFile) {
+            file_put_contents($this->lastIdFile, $this->lastId);
         }
     }
 }
